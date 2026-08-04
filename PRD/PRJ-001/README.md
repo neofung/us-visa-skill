@@ -20,6 +20,8 @@
 本项目将产出完整的需求分析文档，作为该 Skill 后续设计与实现的输入基础。
 
 > **2026-08-04 更新：** 项目已从 Obsidian Vault（`05-Life/VISA/`）迁移至独立仓库 `/Users/neo/src/us-visa-skill/`；OCR 兜底方案确定为依赖技能 `tencentcloud-ocr`（见 [技术约束](05-technical-spec/technical-constraints.md) TC-INT-003）。
+>
+> **2026-08-04 更新：** 新增三子 agent 架构需求——DS-160 处理 / 审核 / 面签模拟，由主 agent 按流水线编排，经中间文件衔接（见 [需求清单](02-requirements/requirements-list.md) 模块四）。
 
 ## 文档索引
 

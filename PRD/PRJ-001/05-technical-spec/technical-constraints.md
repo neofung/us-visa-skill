@@ -6,7 +6,7 @@
 |------|-----|
 | 项目编码 | PRJ-001 |
 | 项目名称 | 美签DS-160审核与面签模拟Skill |
-| 文档版本 | v1.4 |
+| 文档版本 | v1.5 |
 | 创建日期 | 2026-08-03 |
 | 最后更新 | 2026-08-04 |
 
@@ -19,6 +19,7 @@
 | TC-STK-001 | 技能框架 | 基于 Claude Code Skill 规范实现（SKILL.md + references/ 等目录结构） | Claude Code 技能标准形态 | 否 |
 | TC-STK-002 | PDF 解析 | 文字版 PDF 使用 Claude 原生 Read 工具提取字段；图片/扫描型 PDF 走依赖技能 tencentcloud-ocr（腾讯云 OCR）兜底（见 TC-INT-003）。用户材料主流程为文字版完整表单 PDF（澄清轮次2-答1，2026-08-03 确认） | 主流程零依赖；仅图片型走 OCR | 否 |
 | TC-STK-003 | 核心逻辑 | 审核规则与面签模拟由 LLM（Claude）驱动，技能为提示词+规则文件封装 | 技能的定位是 AI 驱动辅助 | 是 |
+| TC-STK-004 | 子 Agent 架构 | 三子 agent（DS-160 处理 / 审核 / 面签模拟）以 Claude Code subagent 定义于 agents 目录，主 agent 用 Agent 工具编排调度 | 满足"三子 agent 独立实现"需求 | 否 |
 
 ## 基础设施约束
 
@@ -34,6 +35,7 @@
 | TC-INT-001 | Claude Code | 软连接 | 技能源码存于本仓库 `skills/<技能名>/`，软连接到 `.claude/skills/<技能名>`（相对软连接 `../skills/<技能名>`） | 否 |
 | TC-INT-002 | 本仓库 | 目录约定 | 输入/输出位置由用户在会话中指定，遵循仓库目录结构 | 否 |
 | TC-INT-003 | tencentcloud-ocr（依赖技能） | 依赖技能脚本 | 图片型 PDF 经依赖技能 tencentcloud-ocr（腾讯云通用文字识别·高精度版）识别：凭据 SecretId/SecretKey 由用户每次会话手动输入（env 前缀传入，不落盘），在 tencentcloud-ocr 技能目录下用装有 SDK 的解释器执行 `scripts/main.py`，多页 PDF 逐页识别（详见 SKILL.md 第六节） | 是 |
+| TC-INT-004 | 中间文件衔接 | 生成/读取 | DS-160 处理 agent 生成结构化中间文件（JSON）到用户指定位置，审核/模拟 agent 读取；会话结束由主 agent 清理，不纳入版本库（详见 SKILL.md） | 是 |
 
 ## 合规与法规约束
 
@@ -57,6 +59,7 @@
 | TC-OTH-001 | 图片/扫描型 PDF 经依赖技能 tencentcloud-ocr 识别（非首期主线，作为兜底） | 用户材料主流程为文字版；图片型兜底经 tencentcloud-ocr（见 TC-INT-003） | 是（后续可切换本地 OCR） |
 | TC-OTH-002 | 技能命名定为 `/美签`（示例），实现阶段最终确认 | 技能名影响触发方式（SC-016 验收示例以 `/美签` 为准） | 是 |
 | TC-OTH-003 | OCR 凭据保护：SecretId/SecretKey 由用户**每次会话手动输入**，不写入技能源码、不写入文档、不写入仓库（git）；不落盘、不缓存；凭据轮换由用户自行管理 | 用户明确要求保护真实凭据；避免凭据进入版本管理 | 否 |
+| TC-OTH-004 | 中间文件临时性与隐私：DS-160 处理 agent 生成的中间文件为临时产物，存放于用户指定位置，会话结束清理，不纳入版本库、不缓存 | 中间文件含敏感个人信息，避免残留仓库 | 否 |
 
 ---
 
@@ -69,3 +72,4 @@
 | 2026-08-03 | v1.2 | TC-STK-002 明确"Claude 原生 Read 读取"机制；TC-OTH-001 依据用户确认的 A 类材料（文字版逐页 PDF）放宽 OCR 需求 | 用户确认 PDF 实际形态 |
 | 2026-08-03 | v1.3 | 图片型 PDF 引入 PaddleOCR 网络 API（PP-OCRv6）；新增 TC-INT-003（API 集成）与 TC-OTH-003（token 手动输入、不落盘）；TC-STK-002/TC-OTH-001 同步更新 | 用户选定 PaddleOCR 免费网络接口并确认安全例外 |
 | 2026-08-04 | v1.4 | OCR 方案回退为依赖技能 tencentcloud-ocr：TC-INT-003/TC-STK-002/TC-OTH-001/TC-OTH-003 同步更新；TC-RES-002 补充 OCR 例外 | 用户最终确定 OCR 方案为 tencentcloud-ocr；审核修复 |
+| 2026-08-04 | v1.5 | 新增 TC-STK-004（子 Agent 架构）、TC-INT-004（中间文件衔接）、TC-OTH-004（中间文件临时性与隐私） | 新增三子 agent 需求 |
