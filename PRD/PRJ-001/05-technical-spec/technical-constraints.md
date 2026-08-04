@@ -48,7 +48,7 @@
 | 编号 | 约束类别 | 约束描述 | 影响 |
 |------|---------|---------|------|
 | TC-RES-001 | 维护方式 | 个人项目，单人次要维护 | 设计追求简洁，减少维护成本 |
-| TC-RES-002 | 外部依赖 | 不依赖外部付费 API（避免数据外传与成本） | 解析与逻辑均本地化 |
+| TC-RES-002 | 外部依赖 | 除用户主动选择的腾讯云 OCR（依赖技能 tencentcloud-ocr）外，不依赖其他外部 API（避免数据外传与成本） | 解析与逻辑均本地化；OCR 例外见 TC-INT-003 |
 
 ## 其他约束
 
@@ -68,4 +68,4 @@
 | 2026-08-03 | v1.1 | TC-REG-003 补充来源依据；TC-OTH-002 定为 `/美签`（示例）与 SC-016 对齐 | P5 第 1 轮审核问题修正 |
 | 2026-08-03 | v1.2 | TC-STK-002 明确"Claude 原生 Read 读取"机制；TC-OTH-001 依据用户确认的 A 类材料（文字版逐页 PDF）放宽 OCR 需求 | 用户确认 PDF 实际形态 |
 | 2026-08-03 | v1.3 | 图片型 PDF 引入 PaddleOCR 网络 API（PP-OCRv6）；新增 TC-INT-003（API 集成）与 TC-OTH-003（token 手动输入、不落盘）；TC-STK-002/TC-OTH-001 同步更新 | 用户选定 PaddleOCR 免费网络接口并确认安全例外 |
-| 2026-08-04 | v1.4 | OCR 方案回退为依赖技能 tencentcloud-ocr：TC-INT-003/TC-STK-002/TC-OTH-001/TC-OTH-003 同步更新 | 用户最终确定 OCR 方案为 tencentcloud-ocr |
+| 2026-08-04 | v1.4 | OCR 方案回退为依赖技能 tencentcloud-ocr：TC-INT-003/TC-STK-002/TC-OTH-001/TC-OTH-003 同步更新；TC-RES-002 补充 OCR 例外 | 用户最终确定 OCR 方案为 tencentcloud-ocr；审核修复 |
