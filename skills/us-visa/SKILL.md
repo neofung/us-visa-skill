@@ -58,7 +58,7 @@ dependencies:
 ### 3.1 DS-160 处理（子 agent：ds160-processor）
 
 1. 调用 `ds160-processor`，传入：PDF 位置、中间文件输出位置、技能 references 路径。
-2. 子 agent 逐个读取 PDF：**先用 pypdf 提取 PDF 文字层**（文字版直接产出文本）；仅当页面无任何可提取文字（整页为扫描图片）才经腾讯云 OCR（见第七节）。
+2. 子 agent 逐个读取 PDF：**先用 pypdf 提取 PDF 文字层**（文字版直接产出文本）；仅当页面无任何可提取文字（整页为扫描图片）才经腾讯云 OCR（见 [references/ocr-pdf-recognition.md](references/ocr-pdf-recognition.md)）。
 3. 按 `references/ds160-fields.md` 核对字段，识别成员类型（成人/儿童），提取结构化字段。
 4. 生成中间文件 JSON（结构见 [references/intermediate-schema.md](references/intermediate-schema.md)），写入用户指定位置。
 5. 请用户确认**主申请人**（面签主应答者）。
@@ -119,7 +119,7 @@ dependencies:
 
 1. **输入/输出位置由用户指定**，技能不擅自决定、不越界扫描。
 2. **不脱敏**：敏感数据保持原始，仅在本地仓库内流转。
-3. **外部服务唯一例外**：腾讯云 OCR API（图片型 PDF 用），经依赖技能 `tencentcloud-ocr` 调用，见第七节。
+3. **外部服务唯一例外**：腾讯云 OCR API（图片型 PDF 用），经依赖技能 `tencentcloud-ocr` 调用，见 [references/ocr-pdf-recognition.md](references/ocr-pdf-recognition.md)。
 4. **四类审核维度全部执行**；一致性维度在无补充信息时标注"未执行"。
 5. **跨成员比对**仅 ≥2 份时执行。
 6. **报告/点评用中文**，模拟对话用英文，无混用。
@@ -131,43 +131,7 @@ dependencies:
 
 ## 七、图片型 PDF 识别（腾讯云 OCR）
 
-**文本提取顺序：先 pypdf，后 OCR。** 默认用 pypdf（Python）提取 PDF 文字层；仅当 PDF 为图片/扫描型（页面无任何可提取文字）且需直接识别时才启用本节。本技能不自带 OCR 脚本，经依赖技能 **tencentcloud-ocr**（腾讯云通用文字识别·高精度版）识别文字。
-
-### 7.1 依赖安装（首次使用前）
-
-`tencentcloud-ocr` 为外部依赖，**需单独安装**到当前 Agent 的 skills 目录（来源 GitHub：[TencentCloud/tencentcloud-ocr-skills](https://github.com/TencentCloud/tencentcloud-ocr-skills)）：
-
-```bash
-# 手动安装（推荐，目录名 tencentcloud-ocr 与依赖名一致）
-git clone --depth 1 https://github.com/TencentCloud/tencentcloud-ocr-skills.git
-cp -R tencentcloud-ocr-skills/tencentcloud-ocr <你的 skills 目录>/tencentcloud-ocr
-```
-
-> 也可用 skills CLI：`npx skills add TencentCloud/tencentcloud-ocr-skills -s tencentcloud-ocr-generalaccurate --copy -y`
-> ⚠️ CLI 按技能 frontmatter `name` 命名，会装成 `tencentcloud-ocr-generalaccurate`——若走此路，须把本技能 frontmatter 的依赖名同步改为 `tencentcloud-ocr-generalaccurate`，二者保持一致。
-
-Python 依赖：`pip install tencentcloud-sdk-python`（运行识别脚本需用装有该 SDK 的解释器）。
-
-> ⚠️ 上游 `scripts/main.py` 有两处 bug，安装后须修复，否则解析不了结果：
-> 1. `call_json()` 已返回 dict，删除对其多余的 `json.loads()`；
-> 2. 其返回统一信封 `{"Response": {...}}`，需先 `resp_json = resp_json.get("Response", resp_json)` 解包再取字段。
-
-### 7.2 识别流程
-
-1. 提示用户："检测到图片型页面，需要腾讯云 OCR 识别，请输入你的 **SecretId** 与 **SecretKey**。"（若已配置 `TENCENTCLOUD_SECRET_ID` / `TENCENTCLOUD_SECRET_KEY` 环境变量，可直接使用）
-2. **凭据由用户每次手动输入**，仅本次会话使用；**绝不写入任何文件**、不缓存、不写入 git。
-3. 在 `tencentcloud-ocr` 技能目录下，用装有 SDK 的解释器执行（env 前缀传入凭据，密钥不落盘）：
-
-   ```bash
-   cd <tencentcloud-ocr 技能目录>
-   TENCENTCLOUD_SECRET_ID=<SecretId> TENCENTCLOUD_SECRET_KEY=<SecretKey> \
-     python3 scripts/main.py \
-     --image-base64 "<图片/PDF路径>" --is-pdf true --pdf-page-number <N>
-   ```
-
-4. **多页 PDF 需逐页识别**：该接口单次仅识别 1 页，对每一页分别调用一次（`--pdf-page-number 1 / 2 / 3 …`），再按页合并为完整文本。
-5. 解析返回 JSON：取 `raw_text` 为识别文本；`raw_text` 为空且带 `message` 表示该页无文字，照实反馈。（提示：用 `printf` 或写临时文件读 JSON，勿用 `echo` 传参——zsh 会转义 `\n` 破坏 JSON 结构）
-6. 识别失败时明确告知用户该份跳过，不中断其他文件；结束即丢弃凭据。
+**DS-160 多为浏览器打印的文字版 PDF，通常可直接提取文字，无需 OCR。** 仅当某页整页为扫描图片（无任何可提取文字）时才启用 OCR 兜底。完整流程（依赖安装、凭据处理、逐页识别、上游 bug 修复）见 [references/ocr-pdf-recognition.md](references/ocr-pdf-recognition.md)。
 
 ---
 
@@ -193,4 +157,5 @@ Python 依赖：`pip install tencentcloud-sdk-python`（运行识别脚本需用
 | [references/audit-rules.md](references/audit-rules.md) | 四维审核规则与高风险模式 |
 | [references/question-bank.md](references/question-bank.md) | B1/B2 通用题库（成人+儿童） |
 | [references/intermediate-schema.md](references/intermediate-schema.md) | 中间文件 JSON Schema |
-| tencentcloud-ocr（外部依赖） | 依赖技能：腾讯云通用文字识别（高精度版）。来源 [GitHub](https://github.com/TencentCloud/tencentcloud-ocr-skills)，安装见第七节 |
+| [references/ocr-pdf-recognition.md](references/ocr-pdf-recognition.md) | 图片型 PDF 的腾讯云 OCR 兜底流程（罕见） |
+| tencentcloud-ocr（外部依赖） | 依赖技能：腾讯云通用文字识别（高精度版）。来源 [GitHub](https://github.com/TencentCloud/tencentcloud-ocr-skills)，使用见 references/ocr-pdf-recognition.md |

@@ -114,7 +114,7 @@
 
 1. **一次解析、多次复用**：DS-160 处理 agent 只解析 PDF 一次，将结果全部写入中间文件；审核/模拟 agent 不得重新解析 PDF。
 2. **逐页提取并记录页码**：用 pypdf 按页提取文字时，记录每个字段所在页（页数从 1 开始），写入该成员 `field_pages`（字段名 → 页码）。同一字段跨多页时取首次出现页；页码不可得记 `null`。
-3. **图片/扫描型 PDF**：经依赖技能 tencentcloud-ocr 识别后再提取（见 SKILL.md 第七节），并在 `meta.ocr_used` 标 `true`；单份识别失败跳过并在 `meta` 标注。OCR 逐页识别时同样记录页码。
+3. **图片/扫描型 PDF**：经依赖技能 tencentcloud-ocr 识别后再提取（流程见技能 `references/` 目录的 ocr-pdf-recognition.md），并在 `meta.ocr_used` 标 `true`；单份识别失败跳过并在 `meta` 标注。OCR 逐页识别时同样记录页码。
 4. **字段缺失**：打印版不可见的字段记 `null`，不得臆造；在 `meta` 中列出缺失字段清单，供审核 agent 标注。
 5. **成员互填字段**：家庭成员的配偶/子女互填信息保留原始填写，供审核 agent 跨成员比对。
 
