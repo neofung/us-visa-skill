@@ -8,7 +8,7 @@
 | 状态 | 进行中 |
 | 当前阶段 | 需求分析完成（P1~P5） |
 | 创建日期 | 2026-08-03 |
-| 最后更新 | 2026-08-04 |
+| 最后更新 | 2026-08-07 |
 
 ## 项目简介
 
@@ -22,6 +22,8 @@
 > **2026-08-04 更新：** 项目已从 Obsidian Vault（`05-Life/VISA/`）迁移至独立仓库 `/Users/neo/src/us-visa-skill/`；OCR 兜底方案确定为依赖技能 `tencentcloud-ocr`（见 [技术约束](05-technical-spec/technical-constraints.md) TC-INT-003）。
 >
 > **2026-08-04 更新：** 新增三子 agent 架构需求——DS-160 处理 / 审核 / 面签模拟，由主 agent 按流水线编排，经中间文件衔接（见 [需求清单](02-requirements/requirements-list.md) 模块四）。
+>
+> **2026-08-07 更新：** 面签题库大幅扩充（REQ-021）：新增最新面签实录（2025-12~2026-08，9 篇真实问答）、敏感国家出境记录、2026 新政非洲/庇护衍生题、二签注意事项；最新面签问题由 Agent 经小红书搜索/Exa 检索主动获取并标注来源与日期（见 [需求清单](02-requirements/requirements-list.md) REQ-021、[功能需求](05-technical-spec/functional-requirements.md) FR-021）。
 
 ## 文档索引
 
